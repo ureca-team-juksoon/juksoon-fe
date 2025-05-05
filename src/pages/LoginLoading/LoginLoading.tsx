@@ -1,38 +1,12 @@
 import React, { useEffect } from "react";
-import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
-
-const LoadingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;npm 
-  height: 100vh;
-  background-color: white;
-  color: black;
-`;
-
-const LoadingIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  margin-bottom: 2rem;
-
-  img {
-    width: 100%;
-    height: 100%;
-  }
-`;
-
-const LoadingText = styled.h2`
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-`;
-
-const LoadingStatus = styled.p`
-  font-size: 1rem;
-  color: #aaa;
-`;
+import logo from "../../assets/logo.png";
+import {
+  LoadingContainer,
+  LoadingIcon,
+  LoadingText,
+  LoadingStatus,
+} from "./LoginLoading.styles";
 
 const LoginLoading: React.FC = () => {
   const navigate = useNavigate();
