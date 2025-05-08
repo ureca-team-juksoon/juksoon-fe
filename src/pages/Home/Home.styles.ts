@@ -16,7 +16,7 @@ export const HomeContainer = styled.div`
   flex: 1;
 `;
 
-export const EventGrid = styled.div`
+export const FeedGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;

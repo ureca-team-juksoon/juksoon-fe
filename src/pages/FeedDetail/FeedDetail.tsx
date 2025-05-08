@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import { eventData, EventData } from "../../data/eventData";
+import { feedData, FeedData } from "../../data/feedData";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
-  EventDetailWrapper,
-  EventDetailContainer,
-  EventTitle,
-  EventContentLayout,
-  EventImageSection,
-  EventImage,
+  FeedDetailWrapper,
+  FeedDetailContainer,
+  FeedTitle,
+  FeedContentLayout,
+  FeedImageSection,
+  FeedImage,
   ImageNavigationContainer,
-  EventImageNavigation,
+  FeedImageNavigation,
   NavigationButton,
-  EventDetailsSection,
+  FeedDetailsSection,
   DetailRow,
   DetailLabel,
   DetailValue,
-  EventContent,
+  FeedContent,
   ApplyButton,
   CountdownTimer,
   ModalOverlay,
@@ -26,24 +27,26 @@ import {
   ModalButton,
   StatusTag,
   ParticipantsInfo,
-} from "./EventDetail.styles";
+} from "./FeedDetail.styles";
 
-const EventDetail: React.FC = () => {
+const FeedDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [event, setEvent] = useState<EventData | null>(null);
+  const [feed, setFeed] = useState<FeedData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [countdown, setCountdown] = useState(10); // 테스트용으로 10초
+  // 테스트용으로 10초
+  const [countdown, setCountdown] = useState(10);
   const [buttonActive, setButtonActive] = useState(false);
   const [showOwnerModal, setShowOwnerModal] = useState(false);
-  const [showUserModal, setShowUserModal] = useState(false);
+  const [showTesterModal, setShowTesterModal] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hasApplied, setHasApplied] = useState(false);
 
-  const dummyImages = event?.thumbnail
+  // 더미 이미지 배열 (나중에는 서버에서 받아온 이미지로 대체)
+  const dummyImages = feed?.thumbnail
     ? [
-        event.thumbnail,
+        feed.thumbnail,
         "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000",
         "https://images.unsplash.com/photo-1620171449638-8154348fda11?q=80&w=1000",
       ]
@@ -54,17 +57,17 @@ const EventDetail: React.FC = () => {
     setUserRole(storedUserRole);
 
     if (id) {
-      const eventId = parseInt(id, 10);
-      const foundEvent: EventData | undefined = eventData.find(
-        (e) => e.id === eventId
+      const feedId = parseInt(id, 10);
+      const foundFeed: FeedData | undefined = feedData.find(
+        (e) => e.id === feedId
       );
 
-      if (foundEvent) {
-        setEvent(foundEvent);
-        const appliedEvents = JSON.parse(
-          localStorage.getItem("appliedEvents") || "[]"
+      if (foundFeed) {
+        setFeed(foundFeed);
+        const appliedFeeds = JSON.parse(
+          localStorage.getItem("appliedFeeds") || "[]"
         );
-        if (appliedEvents.includes(eventId)) {
+        if (appliedFeeds.includes(feedId)) {
           setHasApplied(true);
         }
       } else {
@@ -75,7 +78,7 @@ const EventDetail: React.FC = () => {
   }, [id, navigate]);
 
   useEffect(() => {
-    if (event?.status === "closed" || hasApplied) return;
+    if (feed?.status === "closed" || hasApplied) return;
     if (countdown > 0) {
       const timer = setTimeout(() => {
         setCountdown((prev) => prev - 1);
@@ -84,42 +87,42 @@ const EventDetail: React.FC = () => {
     } else {
       setButtonActive(true);
     }
-  }, [countdown, event?.status, hasApplied]);
+  }, [countdown, feed?.status, hasApplied]);
 
   const handleApplyClick = () => {
-    if (!buttonActive || event?.status === "closed" || hasApplied) return;
+    if (!buttonActive || feed?.status === "closed" || hasApplied) return;
 
-    if (userRole === "owner") {
+    if (userRole === "ROLE_OWNER") {
       setShowOwnerModal(true);
     } else {
-      setShowUserModal(true);
+      setShowTesterModal(true);
       setHasApplied(true);
-      const appliedEvents = JSON.parse(
-        localStorage.getItem("appliedEvents") || "[]"
+      const appliedFeeds = JSON.parse(
+        localStorage.getItem("appliedFeeds") || "[]"
       );
-      if (!appliedEvents.includes(Number(id))) {
-        appliedEvents.push(Number(id));
-        localStorage.setItem("appliedEvents", JSON.stringify(appliedEvents));
+      if (!appliedFeeds.includes(Number(id))) {
+        appliedFeeds.push(Number(id));
+        localStorage.setItem("appliedFeeds", JSON.stringify(appliedFeeds));
       }
 
-      if (event) {
-        const updatedEvent = {
-          ...event,
-          participationCount: event.participationCount + 1,
+      if (feed) {
+        const updatedFeed = {
+          ...feed,
+          participationCount: feed.participationCount + 1,
         };
-        if (updatedEvent.participationCount >= updatedEvent.maxParticipants) {
-          updatedEvent.status = "closed";
+        if (updatedFeed.participationCount >= updatedFeed.maxParticipants) {
+          updatedFeed.status = "closed";
         }
-        setEvent(updatedEvent);
+        setFeed(updatedFeed);
       }
     }
   };
 
   const handleCloseModal = () => {
-    if (userRole === "owner") {
+    if (userRole === "ROLE_OWNER") {
       setShowOwnerModal(false);
     } else {
-      setShowUserModal(false);
+      setShowTesterModal(false);
     }
   };
 
@@ -137,104 +140,104 @@ const EventDetail: React.FC = () => {
     );
   };
 
-  if (isLoading || !event) {
+  if (isLoading || !feed) {
     return (
-      <EventDetailWrapper>
+      <FeedDetailWrapper>
         <Header />
-        <EventDetailContainer>
+        <FeedDetailContainer>
           <p>로딩 중...</p>
-        </EventDetailContainer>
-      </EventDetailWrapper>
+        </FeedDetailContainer>
+      </FeedDetailWrapper>
     );
   }
 
   return (
-    <EventDetailWrapper>
+    <FeedDetailWrapper>
       <Header />
-      <EventDetailContainer>
-        <EventTitle>{event.title}</EventTitle>
-        <StatusTag $status={event.status}>
-          {event.status === "open" ? "모집중" : "마감"}
+      <FeedDetailContainer>
+        <FeedTitle>{feed.title}</FeedTitle>
+        <StatusTag $status={feed.status}>
+          {feed.status === "open" ? "모집중" : "마감"}
         </StatusTag>
 
-        <EventContentLayout>
-          <EventImageSection>
+        <FeedContentLayout>
+          <FeedImageSection>
             <ImageNavigationContainer>
-              <EventImage
+              <FeedImage
                 src={
                   dummyImages[currentImageIndex] ||
-                  "https://via.placeholder.com/600x400?text=No+Image"
+                  "https://placehold.co/600x400?text=No+Image"
                 }
-                alt={event.title}
+                alt={feed.title}
               />
               {dummyImages.length > 1 && (
-                <EventImageNavigation>
+                <FeedImageNavigation>
                   <NavigationButton onClick={handlePrevImage}>
-                    &lt;
+                    <ChevronLeftIcon width={24} height={24} />
                   </NavigationButton>
                   <NavigationButton onClick={handleNextImage}>
-                    &gt;
+                    <ChevronRightIcon width={24} height={24} />
                   </NavigationButton>
-                </EventImageNavigation>
+                </FeedImageNavigation>
               )}
             </ImageNavigationContainer>
             <ParticipantsInfo>
-              현재 참여 인원: <p>{event.participationCount}</p>/
-              {event.maxParticipants}명
+              현재 참여 인원: <p>{feed.participationCount}</p>/
+              {feed.maxParticipants}명
             </ParticipantsInfo>
-          </EventImageSection>
+          </FeedImageSection>
 
-          <EventDetailsSection>
+          <FeedDetailsSection>
             <DetailRow>
               <DetailLabel>장소</DetailLabel>
-              <DetailValue>{event.author}</DetailValue>
+              <DetailValue>{feed.author}</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>방문일</DetailLabel>
-              <DetailValue>{event.publishDate}</DetailValue>
+              <DetailValue>{feed.publishDate}</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>가격</DetailLabel>
-              <DetailValue>{event.price.toLocaleString()}원</DetailValue>
+              <DetailValue>{feed.price.toLocaleString()}원</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>작성자</DetailLabel>
-              <DetailValue>{event.author}</DetailValue>
+              <DetailValue>{feed.author}</DetailValue>
             </DetailRow>
             <DetailRow className="last-row">
               <DetailLabel>리뷰 요청사항</DetailLabel>
-              <DetailValue>👉🏻 {event.author} 단골손님을 찾습니다!!</DetailValue>
+              <DetailValue>👉🏻 {feed.author} 단골손님을 찾습니다!!</DetailValue>
             </DetailRow>
 
-            <EventContent>
+            <FeedContent>
               제가 카페는 처음이라 빽다방 단골 지점이랑 맛이 동일한지 좀
               확인해보고 싶어요. 혹시 평소에 빽다방 자주 드시는 손님을
               찾으신다면 오셔서 솔직 리뷰 부탁드립니다! ✓ 방문 시간 자유롭게
               조율 가능! ✓ 전메뉴 시식 가능
-            </EventContent>
+            </FeedContent>
 
             <ApplyButton
-              $active={buttonActive && event.status === "open" && !hasApplied}
+              $active={buttonActive && feed.status === "open" && !hasApplied}
               onClick={handleApplyClick}
             >
-              {event.status === "closed"
-                ? "마감되었습니다"
+              {feed.status === "closed"
+                ? "마감된 이벤트에요"
                 : hasApplied
-                ? "신청되었습니다"
+                ? "이미 신청한 이벤트에요"
                 : buttonActive
-                ? "리뷰단 신청하기"
-                : "신청 준비 중"}
+                ? "리뷰단 신청하기!"
+                : "신청 준비 중이에요"}
             </ApplyButton>
 
-            {!buttonActive && event.status === "open" && !hasApplied && (
+            {!buttonActive && feed.status === "open" && !hasApplied && (
               <CountdownTimer>
                 신청까지 남은 시간:{" "}
                 {String(Math.floor(countdown / 60)).padStart(2, "0")}:
                 {String(countdown % 60).padStart(2, "0")}
               </CountdownTimer>
             )}
-          </EventDetailsSection>
-        </EventContentLayout>
+          </FeedDetailsSection>
+        </FeedContentLayout>
 
         {showOwnerModal && (
           <ModalOverlay onClick={handleCloseModal}>
@@ -246,7 +249,7 @@ const EventDetail: React.FC = () => {
           </ModalOverlay>
         )}
 
-        {showUserModal && (
+        {showTesterModal && (
           <ModalOverlay onClick={handleCloseModal}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <ModalTitle>신청 완료!</ModalTitle>
@@ -255,9 +258,9 @@ const EventDetail: React.FC = () => {
             </ModalContent>
           </ModalOverlay>
         )}
-      </EventDetailContainer>
-    </EventDetailWrapper>
+      </FeedDetailContainer>
+    </FeedDetailWrapper>
   );
 };
 
-export default EventDetail;
+export default FeedDetail;

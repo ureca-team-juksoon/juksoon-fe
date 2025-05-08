@@ -1,4 +1,4 @@
-export interface EventCardProps {
+export interface FeedCardProps {
   id: number;
   title: string;
   publishDate: string;
@@ -9,4 +9,6 @@ export interface EventCardProps {
   participationCount: number;
   maxParticipants: number;
   searchQuery?: string;
+  isInMyPage?: boolean;
+  isOwnerView?: boolean;
 }

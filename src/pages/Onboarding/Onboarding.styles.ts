@@ -50,13 +50,13 @@ export const ButtonContainer = styled.div`
 
 export const RoleButton = styled.button<{
   selected?: boolean;
-  role: "owner" | "user";
+  role: "ROLE_OWNER" | "ROLE_TESTER";
 }>`
   background-color: ${(props) => {
     if (props.selected) {
-      return props.role === "owner" ? "#8EB69B" : "#86A8E7";
+      return props.role === "ROLE_OWNER" ? "#8EB69B" : "#86A8E7";
     }
-    return props.role === "owner" ? "#D2E3C8" : "#D6E2F3";
+    return props.role === "ROLE_OWNER" ? "#D2E3C8" : "#D6E2F3";
   }};
   color: #333;
   border: none;
@@ -74,9 +74,9 @@ export const RoleButton = styled.button<{
   &:hover {
     background-color: ${(props) => {
       if (props.selected) {
-        return props.role === "owner" ? "#8EB69B" : "#86A8E7";
+        return props.role === "ROLE_OWNER" ? "#8EB69B" : "#86A8E7";
       }
-      return props.role === "owner" ? "#C1D6B3" : "#B9CBEC";
+      return props.role === "ROLE_OWNER" ? "#C1D6B3" : "#B9CBEC";
     }};
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);

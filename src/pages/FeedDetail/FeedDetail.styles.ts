@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const EventDetailWrapper = styled.div`
+export const FeedDetailWrapper = styled.div`
   width: 100%;
   min-height: 100vh;
   display: flex;
@@ -8,14 +8,14 @@ export const EventDetailWrapper = styled.div`
   background-color: #f9f9f9;
 `;
 
-export const EventDetailContainer = styled.div`
+export const FeedDetailContainer = styled.div`
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1rem;
 `;
 
-export const EventTitle = styled.h1`
+export const FeedTitle = styled.h1`
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 1rem;
@@ -23,7 +23,7 @@ export const EventTitle = styled.h1`
   color: #222;
 `;
 
-export const EventContentLayout = styled.div`
+export const FeedContentLayout = styled.div`
   display: flex;
   gap: 2.5rem;
   align-items: center;
@@ -33,7 +33,7 @@ export const EventContentLayout = styled.div`
   }
 `;
 
-export const EventImageSection = styled.div`
+export const FeedImageSection = styled.div`
   flex: 1.2;
   max-width: 600px;
 
@@ -42,7 +42,7 @@ export const EventImageSection = styled.div`
   }
 `;
 
-export const EventImage = styled.img`
+export const FeedImage = styled.img`
   width: 100%;
   aspect-ratio: 4/3;
   object-fit: cover;
@@ -54,7 +54,7 @@ export const ImageNavigationContainer = styled.div`
   position: relative;
 `;
 
-export const EventImageNavigation = styled.div`
+export const FeedImageNavigation = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -67,8 +67,8 @@ export const EventImageNavigation = styled.div`
 `;
 
 export const NavigationButton = styled.button`
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.8);
   display: flex;
@@ -87,7 +87,7 @@ export const NavigationButton = styled.button`
   }
 `;
 
-export const EventDetailsSection = styled.div`
+export const FeedDetailsSection = styled.div`
   flex: 1;
   background-color: #fff;
   padding: 2rem;
@@ -128,12 +128,12 @@ export const DetailValue = styled.div`
   color: #333;
 `;
 
-export const EventDescription = styled.div`
+export const FeedDescription = styled.div`
   margin-top: 1rem;
   line-height: 1.6;
 `;
 
-export const EventContent = styled.div`
+export const FeedContent = styled.div`
   white-space: pre-wrap;
   color: #555;
   line-height: 1.8;
@@ -177,7 +177,7 @@ export const CountdownTimer = styled.div`
   margin-top: 0.6rem;
 `;
 
-export const EventInfo = styled.div`
+export const FeedInfo = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
@@ -203,14 +203,19 @@ export const StatusTag = styled.div<{ $status: "open" | "closed" }>`
 export const ParticipantsInfo = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 0.75rem;
   margin-top: 1rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #666;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   p {
-    font-weight: 600;
-    color: #333;
-    margin-left: 0.2rem;
+    color: #5c8f52;
+    font-weight: bold;
+    margin-left: 0.3rem;
   }
 `;
 

@@ -113,3 +113,25 @@ export const HighlightedText = styled.span`
   padding: 0 2px;
   font-weight: 700;
 `;
+
+export const EditIconContainer = styled.div`
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+
+  &:hover {
+    transform: scale(1.1) rotate(10deg);
+    background-color: white;
+  }
+`;

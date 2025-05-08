@@ -4,4 +4,6 @@ export interface CategoryFilterProps {
   onFilterChange: (showAvailableOnly: boolean) => void;
   onSortChange: (sortType: SortType) => void;
   onCategoryChange: (category: string | null) => void;
+  filterLabel?: string;
+  showAllFeeds?: boolean;
 }

@@ -14,8 +14,8 @@ import {
   Author,
   Price,
   HighlightedText,
-} from "./EventCard.styles";
-import { EventCardProps } from "./EventCard.types";
+} from "./FeedCard.styles";
+import { FeedCardProps } from "./FeedCard.types";
 
 const highlightText = (text: string, query: string): React.ReactNode => {
   if (!query) return text;
@@ -39,7 +39,7 @@ const highlightText = (text: string, query: string): React.ReactNode => {
   }
 };
 
-const EventCard: React.FC<EventCardProps> = ({
+const FeedCard: React.FC<FeedCardProps> = ({
   id,
   title,
   publishDate,
@@ -50,18 +50,35 @@ const EventCard: React.FC<EventCardProps> = ({
   participationCount,
   maxParticipants,
   searchQuery = "",
+  isInMyPage = false,
+  isOwnerView = false,
 }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/event/${id}`);
+    console.log(
+      `Card clicked: ID=${id}, isOwnerView=${isOwnerView}, isInMyPage=${isInMyPage}`
+    );
+
+    // Owner의 MyPage에서 자신의 피드 클릭 시 수정 페이지로 이동
+    if (isOwnerView && isInMyPage) {
+      navigate(`/feed/edit/${id}`);
+    }
+    // 테스터의 MyPage에서 신청한 피드 클릭 시 리뷰 페이지로 이동
+    else if (isInMyPage) {
+      navigate(`/review/${id}`);
+    }
+    // 그 외의 모든 경우 상세 페이지로 이동
+    else {
+      navigate(`/feed/${id}`);
+    }
   };
 
   return (
     <Card onClick={handleCardClick}>
       <ThumbnailContainer>
         <Thumbnail
-          src={thumbnail || "https://via.placeholder.com/300x200?text=No+Image"}
+          src={thumbnail || "https://placehold.co/300x200?text=No+Image"}
           alt={title}
         />
         <BadgeContainer>
@@ -91,4 +108,4 @@ const EventCard: React.FC<EventCardProps> = ({
   );
 };
 
-export default EventCard;
+export default FeedCard;

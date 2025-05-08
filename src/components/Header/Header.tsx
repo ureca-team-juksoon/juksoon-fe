@@ -65,8 +65,8 @@ const Header: React.FC<HeaderProps> = ({ onSearch }) => {
         </SearchForm>
       </SearchContainer>
       <Navigation>
-        <NavLink href="/home">HOME</NavLink>
-        <NavLink href="/mypage">My Page</NavLink>
+        <NavLink onClick={() => navigate("/home")}>HOME</NavLink>
+        <NavLink onClick={() => navigate("/mypage")}>My Page</NavLink>
       </Navigation>
     </HeaderContainer>
   );

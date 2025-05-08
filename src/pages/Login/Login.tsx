@@ -2,12 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import kakaoLogo from "../../assets/kakao.svg";
 import { LoginContainer, Logo, Subtitle, KakaoButton } from "./Login.styles";
+import api from "../../utils/axios.ts";
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
+   //  const navigate = useNavigate();
 
-  const handleKakaoLogin = () => {
-    navigate("/login/loading");
+    const handleKakaoLogin =  async  () => {
+    try {
+        await api.get("/login");
+
+    } catch (error) {
+        console.log("사용자 정보 확인 에러" ,  error);
+    }
   };
 
   return (

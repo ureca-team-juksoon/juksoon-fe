@@ -11,20 +11,15 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onFilterChange,
   onSortChange,
   onCategoryChange,
+  filterLabel = "모든 이벤트 보기",
+  showAllFeeds = false,
 }) => {
   const [activeSort, setActiveSort] = useState<SortType>("마감일순");
-  const [filterAvailable, setFilterAvailable] = useState<boolean>(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const handleSortChange = (sort: SortType) => {
     setActiveSort(sort);
     onSortChange(sort);
-  };
-
-  const handleFilterChange = () => {
-    const newFilterState = !filterAvailable;
-    setFilterAvailable(newFilterState);
-    onFilterChange(newFilterState);
   };
 
   const handleCategoryChange = (category: string) => {
@@ -48,8 +43,11 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         >
           가격순
         </SortButton>
-        <FilterButton $active={filterAvailable} onClick={handleFilterChange}>
-          신청 가능한 피드만 보기
+        <FilterButton
+          $active={showAllFeeds}
+          onClick={() => onFilterChange(!showAllFeeds)}
+        >
+          {filterLabel}
         </FilterButton>
       </FilterContainer>
 

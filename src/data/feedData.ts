@@ -1,4 +1,4 @@
-export interface EventData {
+export interface FeedData {
   id: number;
   title: string;
   publishDate: string;
@@ -8,9 +8,14 @@ export interface EventData {
   thumbnail?: string;
   participationCount: number;
   maxParticipants: number;
+  content?: string;
+  category?: string;
+  startDate?: string;
+  startNow?: boolean;
+  images?: string[];
 }
 
-export const eventData: EventData[] = [
+export const feedData: FeedData[] = [
   {
     id: 1,
     title: "[모집] 신선한 해산물로 만드는 해물 파스타",
@@ -50,11 +55,11 @@ export const eventData: EventData[] = [
   {
     id: 4,
     title: "[모집] 한강뷰 루프탑 BBQ 가오픈 파티",
-    publishDate: "2025-06-01",
+    publishDate: "2025-05-17",
     author: "스카이 그릴",
     price: 45000,
     status: "open" as const,
-    participationCount: 3,
+    participationCount: 2,
     maxParticipants: 5,
     thumbnail:
       "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1174&q=80",
@@ -62,11 +67,11 @@ export const eventData: EventData[] = [
   {
     id: 5,
     title: "[모집] 로컬 농장 식자재로 만드는 브런치",
-    publishDate: "2025-05-12",
+    publishDate: "2025-06-01",
     author: "팜투테이블",
     price: 22000,
     status: "open" as const,
-    participationCount: 5,
+    participationCount: 0,
     maxParticipants: 5,
     thumbnail:
       "https://images.unsplash.com/photo-1513442542250-854d436a73f2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80",

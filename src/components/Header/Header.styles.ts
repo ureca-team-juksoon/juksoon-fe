@@ -105,10 +105,11 @@ export const Navigation = styled.nav`
   align-items: center;
 `;
 
-export const NavLink = styled.a`
+export const NavLink = styled.button`
   text-decoration: none;
   color: #5c8f52;
   font-weight: 600;
+  font-size: 1rem;
 
   &:hover {
     color: #4a7a42;
