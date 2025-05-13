@@ -5,12 +5,13 @@ import { LoginContainer, Logo, Subtitle, KakaoButton } from "./Login.styles";
 import api from "../../utils/axios.ts";
 
 const Login: React.FC = () => {
-   //  const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const handleKakaoLogin =  async  () => {
     try {
-        await api.get("/login");
-
+        const user = await api.get("/login");
+        localStorage.setItem("role" , user.data.userRole);
+        navigate("/login/loading");
     } catch (error) {
         console.log("사용자 정보 확인 에러" ,  error);
     }

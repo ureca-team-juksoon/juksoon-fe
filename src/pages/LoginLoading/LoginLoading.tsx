@@ -16,9 +16,9 @@ const LoginLoading: React.FC = () => {
     // 실제로는 API 호출 등 로그인 로직 추가
     const timer = setTimeout(() => {
       // 최초 로그인 여부 확인 (localStorage에 저장된 값 확인 등)
-      const isFirstLogin = !localStorage.getItem("hasLoggedInBefore");
+      const isRole = !localStorage.getItem("role");
 
-      if (isFirstLogin) {
+      if (!isRole) {
         navigate("/login/onboarding");
       } else {
         navigate("/home"); // /home으로 리다이렉션 변경
