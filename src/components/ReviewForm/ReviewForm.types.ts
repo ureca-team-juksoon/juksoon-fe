@@ -1,4 +1,4 @@
-import { ReviewData } from "../../pages/TesterReviewDetail/TesterReviewDetail.types";
+import { ReviewData } from "../../../../../Users/stl99/바탕 화면/temp/pages/TesterReviewDetail/TesterReviewDetail.types";
 
 export interface ReviewFormProps {
   initialData?: ReviewData | null;

@@ -3,12 +3,13 @@ export interface FeedFormData {
   title: string;
   content: string;
   category: string;
-  startDate: string;
-  startNow: boolean;
-  maxParticipants: number;
-  visitDate: string;
-  images: string[];
+  startAt: string;
+  startNow:  boolean;
+  maxUser: number;
+  expiredAt: string;
+  images?: string[];
   price: number;
-  status: "open" | "closed";
-  participationCount?: number;
+  status?: "UPCOMING" | "OPEN" | "CLOSED";
+  video: File | null ;
+  registeredUser?: number;
 }

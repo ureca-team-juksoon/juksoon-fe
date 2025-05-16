@@ -42,9 +42,9 @@ export const BadgeContainer = styled.div`
   gap: 8px;
 `;
 
-export const StatusBadge = styled.div<{ $status: "open" | "closed" }>`
+export const StatusBadge = styled.div<{ $status: "UPCOMING" | "OPEN" | "CLOSED" }>`
   background-color: ${(props) =>
-    props.$status === "open" ? "#8EB69B" : "#F44336"};
+    props.$status === "CLOSED" ?  "#F44336": "#8EB69B" };
   color: white;
   padding: 5px 10px;
   border-radius: 4px;

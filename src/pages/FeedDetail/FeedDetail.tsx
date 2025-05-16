@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import { feedData, FeedData } from "../../data/feedData";
+import { FeedData } from "../../data/feedData";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
   FeedDetailWrapper,
@@ -28,93 +28,129 @@ import {
   StatusTag,
   ParticipantsInfo,
 } from "./FeedDetail.styles";
+import axios from "../../utils/axios.ts";
 
 const FeedDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [feed, setFeed] = useState<FeedData | null>(null);
+  const [feed, setFeed] =useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // 테스트용으로 10초
-  const [countdown, setCountdown] = useState(10);
+  const [remainingSec, setRemainingSec] = useState(0);
   const [buttonActive, setButtonActive] = useState(false);
   const [showOwnerModal, setShowOwnerModal] = useState(false);
   const [showTesterModal, setShowTesterModal] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [reservation, setReservation] = useState(false);
 
-  // 더미 이미지 배열 (나중에는 서버에서 받아온 이미지로 대체)
-  const dummyImages = feed?.thumbnail
-    ? [
-        feed.thumbnail,
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000",
-        "https://images.unsplash.com/photo-1620171449638-8154348fda11?q=80&w=1000",
-      ]
-    : [];
 
   useEffect(() => {
-    const storedUserRole = localStorage.getItem("userRole");
+    const storedUserRole = localStorage.getItem("role");
     setUserRole(storedUserRole);
 
-    if (id) {
-      const feedId = parseInt(id, 10);
-      const foundFeed: FeedData | undefined = feedData.find(
-        (e) => e.id === feedId
-      );
+    // 피드 정보 요청하기
+    const  feedData = async () => {
+      try {
+        const feedId = parseInt(id!, 10); // 반드시 숫자로 변환
+        console.log(id);
+        const res = await axios.get(`/feed/${feedId}`);
+        console.log(res.data.data)
+        setFeed(res.data.data);
 
-      if (foundFeed) {
-        setFeed(foundFeed);
-        const appliedFeeds = JSON.parse(
-          localStorage.getItem("appliedFeeds") || "[]"
-        );
-        if (appliedFeeds.includes(feedId)) {
-          setHasApplied(true);
-        }
-      } else {
-        navigate("/home");
+      }  catch (error) {
+        console.log ("😥 피드 이벤트 상세 조회 실패", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }
-  }, [id, navigate]);
+    };
+    void feedData();
+    },  [id, navigate]);
 
   useEffect(() => {
-    if (feed?.status === "closed" || hasApplied) return;
-    if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown((prev) => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setButtonActive(true);
-    }
-  }, [countdown, feed?.status, hasApplied]);
+    if (!feed?.startAt) return;
 
-  const handleApplyClick = () => {
-    if (!buttonActive || feed?.status === "closed" || hasApplied) return;
+    const targetTime = (() => {
+        const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
+           if (dateOnlyPattern.test(feed.startAt)) {
+              const [year, month, day] = feed.startAt.split('-').map(Number);
+              // new Date(year, monthIndex, day) is local midnight
+                   return new Date(year, month - 1, day).getTime();
+           }
+          // otherwise include any time component
+               return new Date(feed.startAt).getTime();
+        })();
+
+    console.log(targetTime);
+
+    const updateRemaining = () => {
+      const diff = Math.max(Math.floor((targetTime - Date.now()) / 1000), 0);
+      setRemainingSec(diff);
+      console.log(diff);
+
+      // 남은 시간이 0이 되면 버튼 활성화
+      if (diff === 0) {
+        setButtonActive(true);
+      }
+    };
+
+    // 1) 즉시 한 번 실행해서 초기 남은 시간을 세팅
+    updateRemaining();
+
+    // 2) 이후 1초마다 실행
+    const timerId = setInterval(updateRemaining, 1000);
+    return () => clearInterval(timerId);
+  }, [feed?.startAt]);
+
+  const formatTime = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    console.log(h, m, s);
+    // 시는 2자리, 분초도 2자리로 패딩
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const handleApplyClick = async () => {
+
+    if (!buttonActive || feed?.status === "CLOSED" ) return;
 
     if (userRole === "ROLE_OWNER") {
       setShowOwnerModal(true);
     } else {
-      setShowTesterModal(true);
-      setHasApplied(true);
-      const appliedFeeds = JSON.parse(
-        localStorage.getItem("appliedFeeds") || "[]"
-      );
-      if (!appliedFeeds.includes(Number(id))) {
-        appliedFeeds.push(Number(id));
-        localStorage.setItem("appliedFeeds", JSON.stringify(appliedFeeds));
+
+      // 예약 신청로직
+      try {
+        const response = await axios.post(`/reservation`, {
+          "feedId": feed.id
+        });
+        console.log(response.data);
+        const { success } = response.data.data;
+
+        // 이미 신청된 예약건일때 모달 추가
+
+        if (success) {
+          setReservation(true); // 예약 성공
+          setShowTesterModal(true);
+        } else {
+          console.error("예약 실패", response.data);
+          setShowTesterModal(true); // 실패해도 모달은 표시
+        }
+      } catch (error) {
+        console.error("예약 신청 중 에러 발생:", error);
+         // 추후 에러 발생 모달도 추가
       }
 
-      if (feed) {
-        const updatedFeed = {
-          ...feed,
-          participationCount: feed.participationCount + 1,
-        };
-        if (updatedFeed.participationCount >= updatedFeed.maxParticipants) {
-          updatedFeed.status = "closed";
-        }
-        setFeed(updatedFeed);
-      }
+      // if (feed) {
+      //   const updatedFeed = {
+      //     ...feed,
+      //     participationCount: feed.registeredUser + 1,
+      //   };
+      //   if (updatedFeed. >= updatedFeed.maxUser) {
+      //     updatedFeed.status = "CLOSED";
+      //   }
+      //   setFeed(updatedFeed);
+      // }
     }
   };
 
@@ -127,115 +163,113 @@ const FeedDetail: React.FC = () => {
   };
 
   const handlePrevImage = () => {
-    if (dummyImages.length <= 1) return;
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? dummyImages.length - 1 : prev - 1
+    if (imageUrls.length <= 1) return;
+    setCurrentImageIndex(prev =>
+        prev === 0 ? imageUrls.length - 1 : prev - 1
     );
   };
 
   const handleNextImage = () => {
-    if (dummyImages.length <= 1) return;
-    setCurrentImageIndex((prev) =>
-      prev === dummyImages.length - 1 ? 0 : prev + 1
+    if (imageUrls.length <= 1) return;
+    setCurrentImageIndex(prev =>
+        prev === imageUrls.length - 1 ? 0 : prev + 1
     );
   };
 
   if (isLoading || !feed) {
     return (
-      <FeedDetailWrapper>
-        <Header />
-        <FeedDetailContainer>
-          <p>로딩 중...</p>
-        </FeedDetailContainer>
-      </FeedDetailWrapper>
+        <FeedDetailWrapper>
+          <Header />
+          <FeedDetailContainer>
+            <p>로딩 중...</p>
+          </FeedDetailContainer>
+        </FeedDetailWrapper>
     );
   }
 
+  const imageUrls: string[] = feed.imageUrlList ?? [];
+  const placeholder = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000";
+  const currentSrc = imageUrls[currentImageIndex] ?? placeholder;
   return (
     <FeedDetailWrapper>
       <Header />
       <FeedDetailContainer>
         <FeedTitle>{feed.title}</FeedTitle>
         <StatusTag $status={feed.status}>
-          {feed.status === "open" ? "모집중" : "마감"}
+          {feed.status === "CLOSED" ? "마감" : "모집중"}
         </StatusTag>
 
         <FeedContentLayout>
           <FeedImageSection>
             <ImageNavigationContainer>
-              <FeedImage
-                src={
-                  dummyImages[currentImageIndex] ||
-                  "https://placehold.co/600x400?text=No+Image"
-                }
-                alt={feed.title}
-              />
-              {dummyImages.length > 1 && (
-                <FeedImageNavigation>
-                  <NavigationButton onClick={handlePrevImage}>
-                    <ChevronLeftIcon width={24} height={24} />
-                  </NavigationButton>
-                  <NavigationButton onClick={handleNextImage}>
-                    <ChevronRightIcon width={24} height={24} />
-                  </NavigationButton>
-                </FeedImageNavigation>
+              <FeedImage src={currentSrc} alt={feed.title} />
+              {imageUrls.length > 1 && (
+                  <FeedImageNavigation>
+                    <NavigationButton onClick={handlePrevImage}>
+                      <ChevronLeftIcon width={24} height={24} />
+                    </NavigationButton>
+                    <NavigationButton onClick={handleNextImage}>
+                      <ChevronRightIcon width={24} height={24} />
+                    </NavigationButton>
+                  </FeedImageNavigation>
               )}
             </ImageNavigationContainer>
+            {feed.videoUrl && (
+                <ApplyButton $active={true} onClick={() => setShowVideoModal(true)} style={{ marginTop: '1rem' }}>
+                  동영상 보기
+                </ApplyButton>
+            )}
             <ParticipantsInfo>
-              현재 참여 인원: <p>{feed.participationCount}</p>/
-              {feed.maxParticipants}명
+              현재 참여 인원: <p>{feed.registeredUser}</p>/
+              {feed.maxUser}명
             </ParticipantsInfo>
           </FeedImageSection>
 
           <FeedDetailsSection>
             <DetailRow>
               <DetailLabel>장소</DetailLabel>
-              <DetailValue>{feed.author}</DetailValue>
+              <DetailValue>{feed.storeName}</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>방문일</DetailLabel>
-              <DetailValue>{feed.publishDate}</DetailValue>
+              <DetailValue>{feed.expiredAt}</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>가격</DetailLabel>
               <DetailValue>{feed.price.toLocaleString()}원</DetailValue>
             </DetailRow>
             <DetailRow>
-              <DetailLabel>작성자</DetailLabel>
-              <DetailValue>{feed.author}</DetailValue>
+              <DetailLabel>이벤트 시작일</DetailLabel>
+              <DetailValue>{feed.startAt}</DetailValue>
             </DetailRow>
             <DetailRow className="last-row">
               <DetailLabel>리뷰 요청사항</DetailLabel>
-              <DetailValue>👉🏻 {feed.author} 단골손님을 찾습니다!!</DetailValue>
+              <DetailValue>👉🏻 {feed.title} </DetailValue>
             </DetailRow>
 
             <FeedContent>
-              제가 카페는 처음이라 빽다방 단골 지점이랑 맛이 동일한지 좀
-              확인해보고 싶어요. 혹시 평소에 빽다방 자주 드시는 손님을
-              찾으신다면 오셔서 솔직 리뷰 부탁드립니다! ✓ 방문 시간 자유롭게
-              조율 가능! ✓ 전메뉴 시식 가능
+              {feed.content}
             </FeedContent>
 
             <ApplyButton
-              $active={buttonActive && feed.status === "open" && !hasApplied}
-              onClick={handleApplyClick}
+                $active={buttonActive && feed.status === "UPCOMING"}
+                onClick={handleApplyClick}
             >
-              {feed.status === "closed"
-                ? "마감된 이벤트에요"
-                : hasApplied
-                ? "이미 신청한 이벤트에요"
-                : buttonActive
-                ? "리뷰단 신청하기!"
-                : "신청 준비 중이에요"}
+              {feed.status === "CLOSED"
+                  ? "마감된 이벤트에요"
+                      : buttonActive
+                          ? "리뷰단 신청하기!"
+                          : "신청 준비 중이에요"}
             </ApplyButton>
 
-            {!buttonActive && feed.status === "open" && !hasApplied && (
-              <CountdownTimer>
-                신청까지 남은 시간:{" "}
-                {String(Math.floor(countdown / 60)).padStart(2, "0")}:
-                {String(countdown % 60).padStart(2, "0")}
-              </CountdownTimer>
-            )}
+            {remainingSec !== null &&
+                remainingSec > 0 &&
+                feed.status === "UPCOMING" && (
+                    <CountdownTimer>
+                      신청까지 남은 시간:{" "}
+                      {formatTime(remainingSec)}
+                    </CountdownTimer>
+                )}
           </FeedDetailsSection>
         </FeedContentLayout>
 
@@ -249,7 +283,7 @@ const FeedDetail: React.FC = () => {
           </ModalOverlay>
         )}
 
-        {showTesterModal && (
+        {showTesterModal && reservation && (
           <ModalOverlay onClick={handleCloseModal}>
             <ModalContent onClick={(e) => e.stopPropagation()}>
               <ModalTitle>신청 완료!</ModalTitle>
@@ -257,6 +291,34 @@ const FeedDetail: React.FC = () => {
               <ModalButton onClick={handleCloseModal}>확인</ModalButton>
             </ModalContent>
           </ModalOverlay>
+        )}
+
+        {showTesterModal && (
+            <ModalOverlay onClick={handleCloseModal}>
+              <ModalContent onClick={(e) => e.stopPropagation()}>
+                <ModalTitle>신청 실패!</ModalTitle>
+                <ModalText>다시 신청해주세요</ModalText>
+                <ModalButton onClick={handleCloseModal}>확인</ModalButton>
+              </ModalContent>
+            </ModalOverlay>
+        )}
+
+        {feed.videoUrl && showVideoModal && (
+            <ModalOverlay onClick={() => setShowVideoModal(false)}>
+              <ModalContent onClick={e => e.stopPropagation()}>
+                <ModalTitle>Clip</ModalTitle>
+                <div style={{ position: 'relative', paddingTop: '56.25%' }}>
+                  <iframe
+                      src={feed.videoUrl}
+                      title="Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ position: 'absolute', top:0, left:0, width:'100%', height:'100%' }}
+                  />
+                </div>
+                <ModalButton onClick={() => setShowVideoModal(false)}>닫기</ModalButton>
+              </ModalContent>
+            </ModalOverlay>
         )}
       </FeedDetailContainer>
     </FeedDetailWrapper>

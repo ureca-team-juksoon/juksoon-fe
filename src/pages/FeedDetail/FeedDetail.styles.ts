@@ -269,11 +269,12 @@ export const ModalText = styled.p`
 `;
 
 export const ModalButton = styled.button`
-  padding: 1rem 2.5rem;
+  margin-top: 1.5rem;
+  padding: 0.9rem 2rem;
   border-radius: 30px;
   background-color: #333;
   color: white;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   border: none;
   cursor: pointer;
   transition: all 0.2s;

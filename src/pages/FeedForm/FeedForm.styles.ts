@@ -253,3 +253,20 @@ export const DateInputGroup = styled.div`
   align-items: center;
   gap: 0.5rem;
 `;
+
+export const VideoPreviewContainer = styled.div`
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 500px;
+`;
+
+export const VideoPreview = styled.div`
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #eaeaea;
+  aspect-ratio: 16/9;
+  background-color: #000;
+`;
+

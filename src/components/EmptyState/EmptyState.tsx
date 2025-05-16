@@ -13,13 +13,7 @@ import {
   CalendarIcon,
   DocumentPlusIcon,
 } from "@heroicons/react/24/outline";
-
-type EmptyStateType = "search" | "noFeeds" | "noApplied" | "noOwnFeeds";
-
-interface EmptyStateProps {
-  type: EmptyStateType;
-  searchQuery?: string;
-}
+import { EmptyStateProps } from "./EmptyState.types";
 
 const EmptyState: React.FC<EmptyStateProps> = ({ type, searchQuery }) => {
   const navigate = useNavigate();

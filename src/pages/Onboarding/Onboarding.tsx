@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   OnboardingContainer,
   WelcomeTitle,
@@ -12,15 +11,16 @@ import {
 import api from "../../utils/axios.ts";
 
 const Onboarding: React.FC = () => {
-  const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState<
     "ROLE_TESTER" | "ROLE_OWNER" | null
   >(null);
 
+  const nickname = localStorage.getItem("nickname");
+
   const handleContinue = async  ()  => {
     if (selectedRole) {
       // 역할 저장
-      localStorage.setItem("userRole", selectedRole);
+      localStorage.setItem("role", selectedRole);
       // 역할 수정
       try {
         await api.post("/user/role", {
@@ -29,8 +29,9 @@ const Onboarding: React.FC = () => {
       } catch (error){
         console.log ("사용자 정보를 수정 오류", error);
       }
+
       // 홈으로 리다이렉트
-      navigate("/home");
+      window.location.href = "/login/roleSetting";
     }
   };
 
@@ -40,7 +41,7 @@ const Onboarding: React.FC = () => {
 
   return (
     <OnboardingContainer>
-      <WelcomeTitle>환영합니다 `${}`님</WelcomeTitle>
+      <WelcomeTitle>환영합니다 {nickname}님</WelcomeTitle>
       <Question>JUKSOON이 처음이신가요?</Question>
       <SubText>죽순에서 활동할 역할을 선택해주세요</SubText>
 

@@ -19,12 +19,14 @@ import {
   CancelButton,
 } from "./StoreEdit.styles";
 import { PencilIcon } from "@heroicons/react/24/outline";
+import formDataApi from "../../utils/formDataApi.ts";
 
 interface StoreInfo {
   name: string;
   address: string;
   description: string;
-  logo: string;
+  logoImageURL: string;
+  image: File | null;
 }
 
 const StoreEdit: React.FC = () => {
@@ -33,16 +35,29 @@ const StoreEdit: React.FC = () => {
     name: "",
     address: "",
     description: "",
-    logo: "https://placehold.co/150?text=Logo",
+    logoImageURL: "https://placehold.co/150?text=Logo",
+    image: null,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const storedInfo = localStorage.getItem("storeInfo");
-    if (storedInfo) {
-      setStoreInfo(JSON.parse(storedInfo));
-    }
+    const fetchStore = async () => {
+      try {
+        const res = await formDataApi.get("/store");
+        const dto = res.data.data;
+        setStoreInfo({
+          name: dto.name || "",
+          address: dto.address || "",
+          description: dto.description || "",
+          logoImageURL: dto.logoImageURL || dto.logoUrl || "https://placehold.co/150?text=Logo",
+          image: null,
+        });
+      } catch (err) {
+        console.error("가게 정보를 불러오는 데 실패했어요:", err);
+      }
+    };
+    void fetchStore();
   }, []);
 
   const handleChange = (
@@ -65,24 +80,43 @@ const StoreEdit: React.FC = () => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target && typeof e.target.result === "string") {
-          setStoreInfo((prev) => ({
-            ...prev,
-            logo: e.target!.result as string,
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
+
+      // 미리보기 URL 생성
+      const previewUrl = URL.createObjectURL(file);
+
+      setStoreInfo((prev) => ({
+        ...prev,
+        image: file, // ✅ 실제 파일 저장
+        logoImageURL: previewUrl, // ✅ 미리보기용 이미지 URL 갱신
+      }));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Save store info to localStorage
-    localStorage.setItem("storeInfo", JSON.stringify(storeInfo));
-    navigate("/mypage");
+
+    console.log("📡 제출 함수 실행됨");
+
+    const payload = new FormData();
+    if(storeInfo.image){
+      payload.append("image", storeInfo.image);
+    }
+    payload.append("name", storeInfo.name);
+    payload.append("address", storeInfo.address);
+    payload.append("description", storeInfo.description);
+
+
+    for (const pair of payload.entries()) {
+      console.log("📦", pair[0], pair[1]);
+    }
+
+
+    try {
+      await formDataApi.patch(`/store`, payload);
+      navigate("/mypage");
+    } catch (err) {
+      console.error("피드 등록/수정 실패:", err);
+    }
   };
 
   const handleCancel = () => {
@@ -98,7 +132,7 @@ const StoreEdit: React.FC = () => {
         <FormContainer onSubmit={handleSubmit}>
           <LogoSection>
             <LogoContainer>
-              <LogoImage src={storeInfo.logo} alt="Store Logo" />
+              <LogoImage src={storeInfo.logoImageURL} alt="Store Logo" />
               <LogoEditButton type="button" onClick={handleLogoClick}>
                 <PencilIcon width={20} height={20} />
               </LogoEditButton>

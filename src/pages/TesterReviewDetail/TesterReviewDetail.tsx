@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import { useParams } from "react-router-dom";
 import Header from "../../components/Header/Header";
 import ReviewForm from "../../components/ReviewForm/ReviewForm";
 import ReviewDisplay from "../../components/ReviewDisplay/ReviewDisplay";
 import VideoModal from "../../components/VideoModal/VideoModal";
-import { feedData, FeedData } from "../../data/feedData";
 import {
   FeedDetailWrapper,
   FeedDetailContainer,
@@ -26,58 +25,78 @@ import {
 import { ReviewSection, ActionButton } from "./TesterReviewDetail.styles";
 import { ReviewData } from "./TesterReviewDetail.types";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import axios from "../../utils/axios.ts";
 
 const TesterReviewDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const feedId = id ? parseInt(id) : 0;
 
-  const [feed, setFeed] = useState<FeedData | null>(null);
+  const [feed, setFeed] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isWritingReview, setIsWritingReview] = useState(false);
   const [review, setReview] = useState<ReviewData | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 
+  const [userRole, setUserRole] = useState<string | null>(null);
+
   // 이벤트 데이터와 리뷰 데이터 로드
   useEffect(() => {
-    if (feedId) {
-      // 이벤트 데이터 로드
-      const foundFeed = feedData.find((e) => e.id === feedId);
-      if (foundFeed) {
-        setFeed(foundFeed);
-      }
+    const storedUserRole = localStorage.getItem("role");
+    setUserRole(storedUserRole);
 
-      // 로컬 스토리지에서 리뷰 데이터 로드
-      const storedReviews = JSON.parse(
-        localStorage.getItem("feedReviews") || "{}"
-      );
-      if (storedReviews[feedId]) {
-        setReview(storedReviews[feedId]);
-      }
+    const fetchData = async () => {
+      try {
+        const feedId = parseInt(id!, 10);
+        const [feedRes, reviewRes] = await Promise.all([
+          axios.get(`/feed/${feedId}`),
+          axios.get(`/feeds/review/${feedId}`),
+        ]);
 
-      setIsLoading(false);
+        setFeed(feedRes.data.data);
+        if(reviewRes.data.data.reviews.length!=0) {
+          setReview({
+            ...reviewRes.data.data.reviews[0],
+            images: reviewRes.data.data.reviews[0].imageUrls ?? [],
+            video: reviewRes.data.data.reviews[0].video ?? null,
+          });
+        }
+      } catch (error) {
+        console.error("데이터 불러오기 실패", error);
+      } finally {
+        // ✅ 무조건 마지막에 로딩 false
+        setIsLoading(false);
+      }
+    };
+
+    void fetchData();
+  }, [id]);
+
+  const feedImages = useMemo(() => {
+    if (!feed) return [];
+
+    // imageUrlList가 있으면 사용, 없으면 기본 이미지 배열 사용
+    if (feed.imageUrlList && feed.imageUrlList.length > 0) {
+      return feed.imageUrlList;
     }
-  }, [feedId]);
 
-  const dummyImages = feed?.thumbnail
-    ? [
-        feed.thumbnail,
-        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000",
-        "https://images.unsplash.com/photo-1620171449638-8154348fda11?q=80&w=1000",
-      ]
-    : [];
+    return [
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000",
+    ];
+  }, [feed]);
+
 
   const handlePrevImage = () => {
-    if (dummyImages.length <= 1) return;
+    if (feedImages.length <= 1) return;
     setCurrentImageIndex((prev) =>
-      prev === 0 ? dummyImages.length - 1 : prev - 1
+      prev === 0 ? feedImages.length - 1 : prev - 1
     );
   };
 
   const handleNextImage = () => {
-    if (dummyImages.length <= 1) return;
+    if (feedImages.length <= 1) return;
     setCurrentImageIndex((prev) =>
-      prev === dummyImages.length - 1 ? 0 : prev + 1
+      prev === feedImages.length - 1 ? 0 : prev + 1
     );
   };
 
@@ -85,21 +104,47 @@ const TesterReviewDetail: React.FC = () => {
     setIsWritingReview(true);
   };
 
-  const handleReviewSubmit = (reviewData: ReviewData) => {
-    // 리뷰 저장
-    const newReview = {
-      ...reviewData,
-      feedId,
-      createdAt: new Date().toISOString(),
-    };
-    setReview(newReview);
+  const handleReviewSubmit = async (reviewData: ReviewData) => {
+    // 여기는 폼 데이터 형식으로 제출!!
 
-    // 로컬 스토리지에 저장
-    const storedReviews = JSON.parse(
-      localStorage.getItem("feedReviews") || "{}"
-    );
-    storedReviews[feedId] = newReview;
-    localStorage.setItem("feedReviews", JSON.stringify(storedReviews));
+    try {
+      const payload = new FormData();
+      payload.append("feedId", String(feedId));
+      reviewData.images.forEach((file) => {
+        payload.append("images", file);
+      });
+      payload.append("title", reviewData.title);
+      payload.append("content", reviewData.content);
+
+      if (reviewData.video) {
+        payload.append("video", reviewData.video); // 파일 객체
+      }
+
+      if (review) {
+        // 수정일 경우
+        await axios.patch(`/feeds/review/${feedId}`, payload, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        console.log("💕 리뷰가 수정되었습니다!");
+      } else {
+        // 새로 작성할 경우
+        await axios.post(`/feeds/review/${feedId}`, payload, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        console.log("💕 리뷰가 등록되었습니다!");
+      }
+
+      // 작성 후 다시 불러오기
+      const res = await axios.get(`/feeds/review/${feedId}`);
+      setReview({
+        ...res.data.data.reviews[0],
+        images: res.data.data.reviews[0].imageUrls ?? [],
+        video: res.data.data.reviews[0].video ?? null,
+      })
+      setIsWritingReview(false);
+    } catch (error) {
+      console.error("리뷰 제출 실패", error);
+    }
 
     setIsWritingReview(false);
   };
@@ -131,7 +176,7 @@ const TesterReviewDetail: React.FC = () => {
       <FeedDetailContainer>
         <FeedTitle>{feed.title}</FeedTitle>
         <StatusTag $status={feed.status}>
-          {feed.status === "open" ? "모집중" : "마감"}
+          {feed.status === "CLOSED" ? "마감" : "모집중"}
         </StatusTag>
 
         <FeedContentLayout>
@@ -139,12 +184,12 @@ const TesterReviewDetail: React.FC = () => {
             <ImageNavigationContainer>
               <FeedImage
                 src={
-                  dummyImages[currentImageIndex] ||
+                    feedImages[currentImageIndex] ||
                   "https://placehold.co/600x400?text=No+Image"
                 }
                 alt={feed.title}
               />
-              {dummyImages.length > 1 && (
+              {feedImages.length > 1 && (
                 <FeedImageNavigation>
                   <NavigationButton onClick={handlePrevImage}>
                     <ChevronLeftIcon width={24} height={24} />
@@ -156,19 +201,19 @@ const TesterReviewDetail: React.FC = () => {
               )}
             </ImageNavigationContainer>
             <ParticipantsInfo>
-              현재 참여 인원: <p>{feed.participationCount}</p>/
-              {feed.maxParticipants}명
+              현재 참여 인원: <p>{feed.registeredUser}</p>/
+              {feed.maxUser}명
             </ParticipantsInfo>
           </FeedImageSection>
 
           <FeedDetailsSection>
             <DetailRow>
               <DetailLabel>장소</DetailLabel>
-              <DetailValue>{feed.author}</DetailValue>
+              <DetailValue>{feed.address}</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>방문일</DetailLabel>
-              <DetailValue>{feed.publishDate}</DetailValue>
+              <DetailValue>{feed.expiredAt}</DetailValue>
             </DetailRow>
             <DetailRow>
               <DetailLabel>가격</DetailLabel>
@@ -176,18 +221,15 @@ const TesterReviewDetail: React.FC = () => {
             </DetailRow>
             <DetailRow>
               <DetailLabel>작성자</DetailLabel>
-              <DetailValue>{feed.author}</DetailValue>
+              <DetailValue>{feed.storeName}</DetailValue>
             </DetailRow>
             <DetailRow className="last-row">
               <DetailLabel>리뷰 요청사항</DetailLabel>
-              <DetailValue>👉🏻 {feed.author} 단골손님을 찾습니다!!</DetailValue>
+              <DetailValue>👉🏻 {feed.title}!</DetailValue>
             </DetailRow>
 
             <FeedContent>
-              제가 카페는 처음이라 빽다방 단골 지점이랑 맛이 동일한지 좀
-              확인해보고 싶어요. 혹시 평소에 빽다방 자주 드시는 손님을
-              찾으신다면 오셔서 솔직 리뷰 부탁드립니다! ✓ 방문 시간 자유롭게
-              조율 가능! ✓ 전메뉴 시식 가능
+              {feed.content}
             </FeedContent>
           </FeedDetailsSection>
         </FeedContentLayout>

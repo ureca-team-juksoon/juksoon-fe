@@ -17,7 +17,7 @@ import {
   SectionTitle,
 } from "./ReviewDisplay.styles";
 import { FilmIcon } from "@heroicons/react/24/outline";
-import { ReviewData } from "../../pages/TesterReviewDetail/TesterReviewDetail.types";
+import { ReviewData } from "../../../../../Users/stl99/바탕 화면/temp/pages/TesterReviewDetail/TesterReviewDetail.types";
 
 interface ReviewDisplayProps {
   review: ReviewData;
@@ -52,7 +52,18 @@ const ReviewDisplay: React.FC<ReviewDisplayProps> = ({
             <ImagesGrid imageCount={review.images.length}>
               {review.images.map((image, index) => (
                 <ImageContainer key={index}>
-                  <ReviewImage src={image} alt={`리뷰 이미지 ${index + 1}`} />
+                  <ReviewImage
+                    src={image}
+                    alt={`리뷰 이미지 ${index + 1}`}
+                    onError={(e) => {
+                      console.error(`Image failed to load: ${image}`);
+                      (
+                        e.target as HTMLImageElement
+                      ).src = `https://placehold.co/600x400?text=Review+Image+${
+                        index + 1
+                      }`;
+                    }}
+                  />
                 </ImageContainer>
               ))}
             </ImagesGrid>

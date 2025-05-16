@@ -7,21 +7,32 @@ import {
   LoadingText,
   LoadingStatus,
 } from "./LoginLoading.styles";
+import axios from "../../utils/axios.ts";
 
 const LoginLoading: React.FC = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // 2초 후 OnboardingPage로 이동
-    // 실제로는 API 호출 등 로그인 로직 추가
-    const timer = setTimeout(() => {
-      // 최초 로그인 여부 확인 (localStorage에 저장된 값 확인 등)
-      const isRole = !localStorage.getItem("role");
+  useEffect(  () => {
+    //const role = localStorage.getItem("role");
 
-      if (!isRole) {
-        navigate("/login/onboarding");
+    const timer = setTimeout(async () => {
+
+      const user = await axios.get("/login");
+       localStorage.setItem("role", user.data.data.userRole);
+       localStorage.setItem("nickname", user.data.data.nickname);
+
+      //const role = localStorage.getItem("role");
+      const role = user.data.data.userRole;
+
+      //const role = localStorage.getItem("role");
+      console.log("✅ 저장된 role:", role);
+
+      if (role === "ROLE_TESTER" || role === "ROLE_OWNER") {
+        console.log("➡️ navigate to /home");
+        navigate("/home");
       } else {
-        navigate("/home"); // /home으로 리다이렉션 변경
+        console.log("➡️ navigate to /login/onboarding");
+        navigate("/login/onboarding");
       }
     }, 2000);
 

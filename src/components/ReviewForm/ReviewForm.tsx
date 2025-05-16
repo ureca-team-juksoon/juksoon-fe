@@ -19,7 +19,7 @@ import {
   FileInputText,
 } from "./ReviewForm.styles";
 import { XMarkIcon, PhotoIcon, FilmIcon } from "@heroicons/react/24/outline";
-import { ReviewData } from "../../pages/TesterReviewDetail/TesterReviewDetail.types";
+import { ReviewData } from "../../../../../Users/stl99/바탕 화면/temp/pages/TesterReviewDetail/TesterReviewDetail.types";
 import { ReviewFormProps } from "./ReviewForm.types";
 
 const ReviewForm: React.FC<ReviewFormProps> = ({ initialData, onSubmit }) => {
@@ -106,9 +106,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ initialData, onSubmit }) => {
       feedId: initialData?.feedId || 0,
       title,
       content,
-      images: imagePreviews,
-      video: videoPreview,
+      writer: "",
+      images: imageFiles,
+      video: videoInputRef.current?.files?.[0] || null, // ✅ 실제 비디오 파일 전달
       createdAt: initialData?.createdAt || new Date().toISOString(),
+    //  video: videoPreview,
+     // createdAt: initialData?.createdAt || new Date().toISOString(),
       // 실제 파일 객체는 메모리에 보관, 로컬스토리지에는 URL만 저장
     };
 

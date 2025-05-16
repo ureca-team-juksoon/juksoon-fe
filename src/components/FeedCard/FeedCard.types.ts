@@ -1,13 +1,13 @@
 export interface FeedCardProps {
   id: number;
   title: string;
-  publishDate: string;
+  expiredAt: string;
   author: string;
   price: number;
-  status: "open" | "closed";
-  thumbnail?: string;
-  participationCount: number;
-  maxParticipants: number;
+  status: "UPCOMING" | "OPEN" | "CLOSED" ;
+  logoImageURL: string;
+  registeredUser: number;
+  maxUser: number;
   searchQuery?: string;
   isInMyPage?: boolean;
   isOwnerView?: boolean;

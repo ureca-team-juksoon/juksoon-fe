@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
@@ -42,13 +42,13 @@ const highlightText = (text: string, query: string): React.ReactNode => {
 const FeedCard: React.FC<FeedCardProps> = ({
   id,
   title,
-  publishDate,
+  expiredAt,
   author,
   price,
   status,
-  thumbnail,
-  participationCount,
-  maxParticipants,
+  logoImageURL,
+  registeredUser,
+  maxUser,
   searchQuery = "",
   isInMyPage = false,
   isOwnerView = false,
@@ -56,13 +56,9 @@ const FeedCard: React.FC<FeedCardProps> = ({
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    console.log(
-      `Card clicked: ID=${id}, isOwnerView=${isOwnerView}, isInMyPage=${isInMyPage}`
-    );
-
-    // Owner의 MyPage에서 자신의 피드 클릭 시 수정 페이지로 이동
+    // Owner의 MyPage에서 자신의 피드 클릭 시 Owner 피드 상세 페이지로 이동
     if (isOwnerView && isInMyPage) {
-      navigate(`/feed/edit/${id}`);
+      navigate(`/feed/owner/${id}`);
     }
     // 테스터의 MyPage에서 신청한 피드 클릭 시 리뷰 페이지로 이동
     else if (isInMyPage) {
@@ -74,25 +70,37 @@ const FeedCard: React.FC<FeedCardProps> = ({
     }
   };
 
+  const thumbnailImage = useMemo(() => {
+    if (typeof logoImageURL === "string" && logoImageURL.trim() !== "") {
+      return logoImageURL;
+    }
+    return "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000";
+  }, [logoImageURL]);
+
   return (
     <Card onClick={handleCardClick}>
       <ThumbnailContainer>
         <Thumbnail
-          src={thumbnail || "https://placehold.co/300x200?text=No+Image"}
+          src={thumbnailImage}
           alt={title}
+          onError={(e) => {
+            console.error(`Image failed to load: ${thumbnailImage}`);
+            (e.target as HTMLImageElement).src =
+              "https://placehold.co/300x200?text=Error+Loading";
+          }}
         />
         <BadgeContainer>
           <StatusBadge $status={status}>
-            {status === "open" ? "모집중" : "마감"}
+            {status === "CLOSED" ? "마감" : "모집중"}
           </StatusBadge>
         </BadgeContainer>
         <ParticipantBadge>
-          {participationCount}/{maxParticipants}
+          {registeredUser}/{maxUser}
         </ParticipantBadge>
       </ThumbnailContainer>
       <CardContent>
         <Title>{highlightText(title, searchQuery)}</Title>
-        <PublishDate>방문일: {publishDate}</PublishDate>
+        <PublishDate>방문일: {expiredAt}</PublishDate>
       </CardContent>
       <CardFooter>
         <Author>by. {highlightText(author, searchQuery)}</Author>

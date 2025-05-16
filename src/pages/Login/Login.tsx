@@ -10,7 +10,8 @@ const Login: React.FC = () => {
     const handleKakaoLogin =  async  () => {
     try {
         const user = await api.get("/login");
-        localStorage.setItem("role" , user.data.userRole);
+        console.log(user);
+        localStorage.clear();
         navigate("/login/loading");
     } catch (error) {
         console.log("사용자 정보 확인 에러" ,  error);
