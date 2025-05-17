@@ -5,7 +5,7 @@ import {
   FilterButton,
   CategoryTag,
 } from "./CategoryFilter.styles";
-import { SortType, CategoryFilterProps } from "./CategoryFilter.types";
+import {SortType, CategoryFilterProps, CategoryType} from "./CategoryFilter.types";
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onFilterChange,
@@ -22,7 +22,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
     onSortChange(sort);
   };
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = (category: CategoryType) => {
     const newCategory = activeCategory === category ? null : category;
     setActiveCategory(newCategory);
     onCategoryChange(newCategory);
@@ -53,38 +53,38 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 
       <FilterContainer>
         <CategoryTag
-          $active={activeCategory === "디저트"}
-          onClick={() => handleCategoryChange("디저트")}
+          $active={activeCategory === "DESSERT"}
+          onClick={() => handleCategoryChange("DESSERT")}
         >
           # 디저트
         </CategoryTag>
         <CategoryTag
-          $active={activeCategory === "한식"}
-          onClick={() => handleCategoryChange("한식")}
+          $active={activeCategory === "KOREAN"}
+          onClick={() => handleCategoryChange("KOREAN")}
         >
           # 한식
         </CategoryTag>
         <CategoryTag
-          $active={activeCategory === "양식"}
-          onClick={() => handleCategoryChange("양식")}
+          $active={activeCategory === "WESTERN"}
+          onClick={() => handleCategoryChange("WESTERN")}
         >
           # 양식
         </CategoryTag>
         <CategoryTag
-          $active={activeCategory === "중식"}
-          onClick={() => handleCategoryChange("중식")}
+          $active={activeCategory === "CHINESE"}
+          onClick={() => handleCategoryChange("CHINESE")}
         >
           # 중식
         </CategoryTag>
         <CategoryTag
-          $active={activeCategory === "일식"}
-          onClick={() => handleCategoryChange("일식")}
+          $active={activeCategory === "JAPANESE"}
+          onClick={() => handleCategoryChange("JAPANESE")}
         >
           # 일식
         </CategoryTag>
         <CategoryTag
-          $active={activeCategory === "분식"}
-          onClick={() => handleCategoryChange("분식")}
+          $active={activeCategory === "BUNSIK"}
+          onClick={() => handleCategoryChange("BUNSIK")}
         >
           # 분식
         </CategoryTag>

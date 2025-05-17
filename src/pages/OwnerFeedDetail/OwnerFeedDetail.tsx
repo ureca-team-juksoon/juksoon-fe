@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import { feedData, FeedData } from "../../data/feedData";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
   FeedDetailWrapper,
@@ -22,14 +21,10 @@ import {
   StatusTag,
 } from "../FeedDetail/FeedDetail.styles";
 import { ActionButton } from "../TesterReviewDetail/TesterReviewDetail.styles";
-import { ReviewData } from "../../pages/TesterReviewDetail/TesterReviewDetail.types";
+import { ReviewData } from "../TesterReviewDetail/TesterReviewDetail.types.ts";
 import ReviewDisplay from "../../components/ReviewDisplay/ReviewDisplay";
 import VideoModal from "../../components/VideoModal/VideoModal";
 import {
-  ApplicantSection,
-  ApplicantList,
-  ApplicantItem,
-  ApplicantName,
   ActionButtonWrapper,
   ReviewSection,
   ReviewsContainer,
@@ -58,11 +53,7 @@ const OwnerFeedDetail: React.FC = () => {
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [userRole, setUserRole] = useState<string | null>(null);
-
   useEffect(() => {
-    const storedUserRole = localStorage.getItem("role");
-    setUserRole(storedUserRole);
 
     const fetchData = async () => {
       try {

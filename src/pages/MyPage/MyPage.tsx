@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
-import { SortType } from "../../components/CategoryFilter/CategoryFilter.types";
 import FeedCard from "../../components/FeedCard/FeedCard";
 import {
   MyPageContainer,
@@ -54,9 +52,6 @@ const MyPage: React.FC = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [storeInfo, setStoreInfo] = useState<StoreResponse | null>(null);
   const [feeds, setFeeds] = useState<FeedResponse[]>([]);
-  const [showAllFeeds, setShowAllFeeds] = useState(false);
-  const [sortType, setSortType] = useState<SortType>("마감일순");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // 사용자 닉네임 가져오기
   const nickname = localStorage.getItem("nickname");
@@ -101,16 +96,8 @@ const MyPage: React.FC = () => {
       );
     }
 
-    if (sortType === "마감일순") {
-      filtered.sort(
-          (a, b) => new Date(a.expiredAt).getTime() - new Date(b.expiredAt).getTime()
-      );
-    } else if (sortType === "가격순") {
-      filtered.sort((a, b) => a.price- b.price);
-    }
-
     return filtered;
-  }, [feeds, searchQuery, showAllFeeds, sortType]);
+  }, [feeds, searchQuery]);
 
 
   return (
@@ -191,13 +178,6 @@ const MyPage: React.FC = () => {
                 <MyPageTitle>
                   <p>{nickname}</p>님이 신청한 이벤트
                 </MyPageTitle>
-                <CategoryFilter
-                    onFilterChange={setShowAllFeeds}
-                    onSortChange={setSortType}
-                    onCategoryChange={setActiveCategory}
-                    filterLabel="모든 이벤트 보기"
-                    showAllFeeds={showAllFeeds}
-                />
                 {filteredFeeds.length > 0 ? (
                     <FeedGrid>
                       {filteredFeeds.map((feed) => (

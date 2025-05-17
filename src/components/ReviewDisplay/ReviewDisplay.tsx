@@ -17,7 +17,7 @@ import {
   SectionTitle,
 } from "./ReviewDisplay.styles";
 import { FilmIcon } from "@heroicons/react/24/outline";
-import { ReviewData } from "../../../../../Users/stl99/바탕 화면/temp/pages/TesterReviewDetail/TesterReviewDetail.types";
+import { ReviewData } from "../../pages/TesterReviewDetail/TesterReviewDetail.types";
 
 interface ReviewDisplayProps {
   review: ReviewData;
@@ -53,7 +53,7 @@ const ReviewDisplay: React.FC<ReviewDisplayProps> = ({
               {review.images.map((image, index) => (
                 <ImageContainer key={index}>
                   <ReviewImage
-                    src={image}
+                      src={typeof image === 'string' ? image : URL.createObjectURL(image)}
                     alt={`리뷰 이미지 ${index + 1}`}
                     onError={(e) => {
                       console.error(`Image failed to load: ${image}`);

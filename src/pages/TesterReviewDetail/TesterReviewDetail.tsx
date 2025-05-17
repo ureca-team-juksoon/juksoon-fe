@@ -38,12 +38,9 @@ const TesterReviewDetail: React.FC = () => {
   const [review, setReview] = useState<ReviewData | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
 
-  const [userRole, setUserRole] = useState<string | null>(null);
-
   // 이벤트 데이터와 리뷰 데이터 로드
   useEffect(() => {
-    const storedUserRole = localStorage.getItem("role");
-    setUserRole(storedUserRole);
+
 
     const fetchData = async () => {
       try {
