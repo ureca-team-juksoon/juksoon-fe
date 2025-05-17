@@ -9,7 +9,7 @@ api.interceptors.response.use(
 
         // 맨 위에서 걸러야만 무한 루프를 끊을 수 있음
         if (status === 401 && orig.url?.endsWith('/refresh')) {
-            window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
+            window.location.href = `${import.meta.env.VITE_KAKAO_LOGIN}`;
             return Promise.reject(error);
         }
 
@@ -20,7 +20,7 @@ api.interceptors.response.use(
                 await api.post('/refresh');   // 이 코드는 이제 1번 분기에서 제외돼서 루프 안 돔
                 return api(orig);
             } catch {
-                window.location.href = 'http://localhost:8080/oauth2/authorization/kakao';
+                window.location.href = `${import.meta.env.VITE_KAKAO_LOGIN}`;
                 return Promise.reject(error);
             }
         }
