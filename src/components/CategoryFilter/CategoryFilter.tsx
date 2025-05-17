@@ -11,10 +11,10 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onFilterChange,
   onSortChange,
   onCategoryChange,
-  filterLabel = "모든 이벤트 보기",
+  filterLabel = "신청 가능한 이벤트",
   showAllFeeds = false,
 }) => {
-  const [activeSort, setActiveSort] = useState<SortType>("마감일순");
+  const [activeSort, setActiveSort] = useState<SortType>("RECENT");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const handleSortChange = (sort: SortType) => {
@@ -32,14 +32,14 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
     <>
       <FilterContainer>
         <SortButton
-          $active={activeSort === "마감일순"}
-          onClick={() => handleSortChange("마감일순")}
+          $active={activeSort === "RECENT"}
+          onClick={() => handleSortChange("RECENT")}
         >
-          마감일순
+          최신순
         </SortButton>
         <SortButton
-          $active={activeSort === "가격순"}
-          onClick={() => handleSortChange("가격순")}
+          $active={activeSort === "PRICE_ASC"}
+          onClick={() => handleSortChange("PRICE_ASC")}
         >
           가격순
         </SortButton>
