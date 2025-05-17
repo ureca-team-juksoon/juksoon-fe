@@ -218,7 +218,7 @@ const OwnerFeedDetail: React.FC = () => {
               <DetailValue>✨ {feed.title} </DetailValue>
             </DetailRow>
             <FeedContent>
-              {feed.content.split("\n").map((line, index) => (
+              {feed.content.split("\n").map((line: string, index: number) => (
                 <p key={index}>{line}</p>
               ))}
             </FeedContent>
