@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import { FeedData } from "../../data/feedData";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
   FeedDetailWrapper,
@@ -29,6 +28,7 @@ import {
   ParticipantsInfo,
 } from "./FeedDetail.styles";
 import axios from "../../utils/axios.ts";
+import {AxiosError} from "axios";
 
 const FeedDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,12 +37,14 @@ const FeedDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [remainingSec, setRemainingSec] = useState(0);
   const [buttonActive, setButtonActive] = useState(false);
-  const [showOwnerModal, setShowOwnerModal] = useState(false);
-  const [showTesterModal, setShowTesterModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [reservation, setReservation] = useState(false);
+
+  const [modalInfo, setModalInfo] = useState<{title: string, message: string} | null>(null);
+  // const [showOwnerModal, setShowOwnerModal] = useState(false);
+  // const [showTesterModal, setShowTesterModal] = useState(false);
+  // const [reservation, setReservation] = useState(false);
 
 
   useEffect(() => {
@@ -112,13 +114,15 @@ const FeedDetail: React.FC = () => {
   };
 
   const handleApplyClick = async () => {
-
-    if (!buttonActive || feed?.status === "CLOSED" ) return;
+    if (!buttonActive || feed?.status === "CLOSED" || !feed) return;
 
     if (userRole === "ROLE_OWNER") {
-      setShowOwnerModal(true);
-    } else {
-
+      setModalInfo({
+        title: "잠깐!",
+        message: "사장님은 신청하실 수 없어요",
+      });
+      return;
+    }
       // 예약 신청로직
       try {
         const response = await axios.post(`/reservation`, {
@@ -129,15 +133,22 @@ const FeedDetail: React.FC = () => {
 
         // 이미 신청된 예약건일때 모달 추가
         if (success) {
-          setReservation(true); // 예약 성공
-          setShowTesterModal(true);
-        } else {
-          console.error("예약 실패", response.data);
-          setShowTesterModal(true); // 실패해도 모달은 표시
+          setModalInfo({
+            title: "신청 완료!",
+            message: "당첨 결과를 기다려주세요",
+          });
         }
       } catch (error) {
         console.error("예약 신청 중 에러 발생:", error);
-         // 추후 에러 발생 모달도 추가
+         setModalInfo({
+           title: "신청 실패!",
+           message:
+           error instanceof AxiosError
+           ? error.response?.data?.message || error.message
+               :error instanceof Error
+           ?error.message
+               :String(error),
+         });
       }
 
       // if (feed) {
@@ -149,17 +160,16 @@ const FeedDetail: React.FC = () => {
       //     updatedFeed.status = "CLOSED";
       //   }
       //   setFeed(updatedFeed);
-      // }
-    }
+      //
   };
 
-  const handleCloseModal = () => {
-    if (userRole === "ROLE_OWNER") {
-      setShowOwnerModal(false);
-    } else {
-      setShowTesterModal(false);
-    }
-  };
+  // const handleCloseModal = () => {
+  //   if (userRole === "ROLE_OWNER") {
+  //     setShowOwnerModal(false);
+  //   } else {
+  //     setShowTesterModal(false);
+  //   }
+  // };
 
   const handlePrevImage = () => {
     if (imageUrls.length <= 1) return;
@@ -251,14 +261,14 @@ const FeedDetail: React.FC = () => {
             </FeedContent>
 
             <ApplyButton
-                $active={buttonActive && feed.status === "UPCOMING"}
+                $active={buttonActive && feed.status === "OPEN"}
                 onClick={handleApplyClick}
             >
               {feed.status === "CLOSED"
                   ? "마감된 이벤트에요"
-                      : buttonActive
-                          ? "리뷰단 신청하기!"
-                          : "신청 준비 중이에요"}
+                      : feed.status == "UPCOMING"
+                      ? "신청 준비 중이에요" :
+                          "리뷰단 신청하기!"}
             </ApplyButton>
 
             {remainingSec !== null &&
@@ -272,32 +282,32 @@ const FeedDetail: React.FC = () => {
           </FeedDetailsSection>
         </FeedContentLayout>
 
-        {showOwnerModal && (
-          <ModalOverlay onClick={handleCloseModal}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <ModalTitle>잠깐!</ModalTitle>
-              <ModalText>사장님은 신청하실 수 없어요</ModalText>
-              <ModalButton onClick={handleCloseModal}>확인</ModalButton>
-            </ModalContent>
-          </ModalOverlay>
-        )}
+        {/*{showOwnerModal && (*/}
+        {/*  <ModalOverlay onClick={handleCloseModal}>*/}
+        {/*    <ModalContent onClick={(e) => e.stopPropagation()}>*/}
+        {/*      <ModalTitle>잠깐!</ModalTitle>*/}
+        {/*      <ModalText>사장님은 신청하실 수 없어요</ModalText>*/}
+        {/*      <ModalButton onClick={handleCloseModal}>확인</ModalButton>*/}
+        {/*    </ModalContent>*/}
+        {/*  </ModalOverlay>*/}
+        {/*)}*/}
 
-        {showTesterModal && reservation && (
-          <ModalOverlay onClick={handleCloseModal}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <ModalTitle>신청 완료!</ModalTitle>
-              <ModalText>당첨 결과를 기다려주세요</ModalText>
-              <ModalButton onClick={handleCloseModal}>확인</ModalButton>
-            </ModalContent>
-          </ModalOverlay>
-        )}
+        {/*{showTesterModal && reservation && (*/}
+        {/*  <ModalOverlay onClick={handleCloseModal}>*/}
+        {/*    <ModalContent onClick={(e) => e.stopPropagation()}>*/}
+        {/*      <ModalTitle>신청 완료!</ModalTitle>*/}
+        {/*      <ModalText>당첨 결과를 기다려주세요</ModalText>*/}
+        {/*      <ModalButton onClick={handleCloseModal}>확인</ModalButton>*/}
+        {/*    </ModalContent>*/}
+        {/*  </ModalOverlay>*/}
+        {/*)}*/}
 
-        {showTesterModal && (
-            <ModalOverlay onClick={handleCloseModal}>
+        {modalInfo && (
+            <ModalOverlay onClick={() => setModalInfo(null)}>
               <ModalContent onClick={(e) => e.stopPropagation()}>
-                <ModalTitle>신청 실패!</ModalTitle>
-                <ModalText>다시 신청해주세요</ModalText>
-                <ModalButton onClick={handleCloseModal}>확인</ModalButton>
+                <ModalTitle>{modalInfo.title}</ModalTitle>
+                <ModalText>{modalInfo.message}</ModalText>
+                <ModalButton onClick={() => setModalInfo(null)}>확인</ModalButton>
               </ModalContent>
             </ModalOverlay>
         )}
