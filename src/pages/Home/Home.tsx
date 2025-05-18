@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/Header/Header";
 import CategoryFilter from "../../components/CategoryFilter/CategoryFilter";
 import {CategoryType, SortType} from "../../components/CategoryFilter/CategoryFilter.types";
 import FeedCard from "../../components/FeedCard/FeedCard";
 import { HomeContainer, HomeWrapper, FeedGrid } from "./Home.styles";
-// import { feedData as initialFeedData } from "../../data/feedData";
 import EmptyState from "../../components/EmptyState/EmptyState";
+import Pagination   from "../../components/Pagination/Pagination.tsx";
 import axios from "../../utils/axios";
 
 const Home: React.FC = () => {
-  const [pages, setpages] = useState(0);
+  const [page, setPages] = useState(0);
   const [maxPage, setMaxPage] = useState(1);
   const [showAllFeeds, setShowAllFeeds] = useState(false);
   const [sortType, setSortType] = useState<SortType>("RECENT");
@@ -21,13 +21,13 @@ const Home: React.FC = () => {
   const changeFeeds = () => {
       axios.get("/feed", {
           params : {
-              page : pages,
+              page : page,
               category : activeCategory,
               sortType : sortType,
               isAvailable : showAllFeeds}
       }).then((response) => {
           setFeeds(response.data.data.feedList);
-          setMaxPage(response.data.maxPage);
+          setMaxPage(response.data.data.maxPage);
       })  .catch((error) => {
           console.error("피드 데이터를 불러오는 중 오류 발생:", error);
       });
@@ -51,7 +51,7 @@ const Home: React.FC = () => {
   //       .catch((error) => {
   //         console.error("피드 데이터를 불러오는 중 오류 발생:", error);
   //       });
-  }, [sortType, activeCategory, showAllFeeds, pages]) ;
+  }, [sortType, activeCategory, showAllFeeds, page]) ;
 
 
   const handleSearch = (query: string) => {
@@ -113,6 +113,7 @@ const Home: React.FC = () => {
               showAllFeeds={showAllFeeds}
           />
           {feeds.length > 0 ? (
+              <>
               <FeedGrid>
                 {feeds.map((feed) => (
                     <FeedCard
@@ -133,6 +134,12 @@ const Home: React.FC = () => {
                     />
                 ))}
               </FeedGrid>
+              <Pagination
+                  currentPage={page}
+                  maxPage={maxPage}
+                  onPageChange={(page) => setPages(page)}
+                  />
+              </>
           ) : searchQuery ? (
               <EmptyState type="search" searchQuery={searchQuery} />
           ) : (

@@ -125,10 +125,9 @@ const FeedDetail: React.FC = () => {
           "feedId": feed.id
         });
         console.log(response.data);
-        const { success } = response.data.data;
+        const  success = response.data.data;
 
         // 이미 신청된 예약건일때 모달 추가
-
         if (success) {
           setReservation(true); // 예약 성공
           setShowTesterModal(true);
